@@ -1,100 +1,135 @@
 import os
+import random
 from datetime import datetime
 
 import google.generativeai as genai
 
 
-# Configure Gemini API
+# Gemini configuration
 genai.configure(
     api_key=os.environ["GEMINI_API_KEY"]
 )
 
 
-# Gemini model
 model = genai.GenerativeModel(
     "gemini-2.5-flash"
 )
 
 
-def generate_daily_update():
 
-    prompt = """
-You are my personal developer AI assistant.
+def generate_daily_note(commit_number, total_commits):
 
-Create a daily developer progress note in Markdown format.
+    prompt = f"""
+You are a developer AI assistant.
+
+Create developer progress note #{commit_number} out of {total_commits}.
+
+Generate a unique Markdown note.
 
 Include:
 
-# Daily Developer Log
+# Developer Progress Update
 
-## What I learned today
-(Write 3-5 points)
+## Learning
+Write something a frontend developer can learn.
 
-## Coding Improvements
-(Write practical improvements)
+## Coding Practice
+Mention a practical coding improvement.
 
-## Technologies
-(Mention relevant frontend/backend technologies)
+## Technology Insight
+Mention React, Next.js, TypeScript, JavaScript,
+Git, AI, or web development.
 
 ## Developer Tip
-(Give one useful programming tip)
+Give one useful professional tip.
 
-Keep it professional and suitable for a junior frontend developer portfolio.
+Keep it short and realistic.
+Do not repeat previous notes.
 """
+
 
     try:
 
-        response = model.generate_content(prompt)
+        response = model.generate_content(
+            prompt
+        )
 
         return response.text
 
 
     except Exception as error:
 
-        print("Gemini API Error:", error)
-
         return f"""
-# Daily Developer Log
+# Developer Progress Update
 
-AI generation failed.
+Automation completed.
+
+Fallback note generated.
 
 Error:
 {error}
 """
 
 
-def save_update(content):
 
-    today = datetime.now().strftime("%Y-%m-%d")
+def create_commits():
 
-    folder = "data"
-
-    os.makedirs(folder, exist_ok=True)
-
-
-    file_path = f"{folder}/{today}.md"
-
-
-    with open(
-        file_path,
-        "w",
-        encoding="utf-8"
-    ) as file:
-
-        file.write(content)
+    # Random commits between 1 and 10
+    total_commits = random.randint(
+        1,
+        10
+    )
 
 
     print(
-        f"Created {file_path}"
+        f"Today's commit count: {total_commits}"
     )
+
+
+    date = datetime.now().strftime(
+        "%Y-%m-%d"
+    )
+
+
+    os.makedirs(
+        "data",
+        exist_ok=True
+    )
+
+
+    for number in range(
+        1,
+        total_commits + 1
+    ):
+
+
+        content = generate_daily_note(
+            number,
+            total_commits
+        )
+
+
+        filename = (
+            f"data/{date}-update-{number}.md"
+        )
+
+
+        with open(
+            filename,
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            file.write(content)
+
+
+
+        print(
+            f"Created {filename}"
+        )
+
 
 
 if __name__ == "__main__":
 
-    update = generate_daily_update()
-
-    save_update(update)
-
-    print(
-        "Automation completed successfully"
-    )
+    create_commits()
