@@ -1,42 +1,100 @@
 import os
 from datetime import datetime
-from openai import OpenAI
+
+import google.generativeai as genai
 
 
-client = OpenAI(
-    api_key=os.environ["OPENAI_API_KEY"]
+# Configure Gemini API
+genai.configure(
+    api_key=os.environ["GEMINI_API_KEY"]
 )
 
 
-prompt = """
-Generate a short daily programming improvement note.
-Save it as a markdown file.
+# Gemini model
+model = genai.GenerativeModel(
+    "gemini-2.5-flash"
+)
+
+
+def generate_daily_update():
+
+    prompt = """
+You are my personal developer AI assistant.
+
+Create a daily developer progress note in Markdown format.
+
+Include:
+
+# Daily Developer Log
+
+## What I learned today
+(Write 3-5 points)
+
+## Coding Improvements
+(Write practical improvements)
+
+## Technologies
+(Mention relevant frontend/backend technologies)
+
+## Developer Tip
+(Give one useful programming tip)
+
+Keep it professional and suitable for a junior frontend developer portfolio.
+"""
+
+    try:
+
+        response = model.generate_content(prompt)
+
+        return response.text
+
+
+    except Exception as error:
+
+        print("Gemini API Error:", error)
+
+        return f"""
+# Daily Developer Log
+
+AI generation failed.
+
+Error:
+{error}
 """
 
 
-response = client.chat.completions.create(
-    model="gpt-5-mini",
-    messages=[
-        {
-            "role":"user",
-            "content":prompt
-        }
-    ]
-)
+def save_update(content):
+
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    folder = "data"
+
+    os.makedirs(folder, exist_ok=True)
 
 
-content = response.choices[0].message.content
+    file_path = f"{folder}/{today}.md"
 
 
-date = datetime.now().strftime("%Y-%m-%d")
+    with open(
+        file_path,
+        "w",
+        encoding="utf-8"
+    ) as file:
+
+        file.write(content)
 
 
-with open(
-    f"data/{date}.md",
-    "w",
-    encoding="utf-8"
-) as file:
-    file.write(content)
+    print(
+        f"Created {file_path}"
+    )
 
 
-print("Daily AI update created")
+if __name__ == "__main__":
+
+    update = generate_daily_update()
+
+    save_update(update)
+
+    print(
+        "Automation completed successfully"
+    )
