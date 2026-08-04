@@ -1,11 +1,11 @@
-name: Daily AI Git Push
+name: Daily AI Automation
 
 
 on:
 
   schedule:
-    # Every day at 8:00 AM Bangladesh time
-    # UTC +6 = 02:00 UTC
+
+    # Every day 8 AM Bangladesh time
     - cron: "0 2 * * *"
 
 
@@ -45,7 +45,7 @@ jobs:
 
 
 
-      - name: Install dependencies
+      - name: Install packages
 
         run: |
 
@@ -53,7 +53,7 @@ jobs:
 
 
 
-      - name: Run AI automation
+      - name: Run AI generator
 
         env:
 
@@ -65,7 +65,7 @@ jobs:
 
 
 
-      - name: Commit changes
+      - name: Create random commits
 
         run: |
 
@@ -74,15 +74,17 @@ jobs:
           git config user.email "ai-bot@github.com"
 
 
-          git add .
 
+          for file in data/*.md
 
-          git commit -m "AI daily update $(date)" || echo "No changes"
+          do
 
+            git add "$file"
 
+            git commit -m "docs: AI developer update $(date +%H:%M:%S)" || true
 
-      - name: Push changes
+            git push
 
-        run: |
+            sleep 20
 
-          git push
+          done
